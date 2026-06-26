@@ -1,307 +1,594 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KiriPilot</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ДогПрогулка — Астрахань</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.0/index.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { font-family: 'Inter', sans-serif; background: #f4f6f8; color: #1a1a2e; overflow-x: hidden; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #f4f6f8; position: relative; padding-bottom: 80px; }
 
-    :root {
-      --bg:       #07080f;
-      --surface:  #0e1021;
-      --accent:   #4f8ef7;
-      --accent2:  #a78bfa;
-      --text:     #e8eaf6;
-      --muted:    #6b7280;
-      --glow:     rgba(79, 142, 247, 0.35);
-    }
+  .header { background: linear-gradient(135deg, #2d8659 0%, #4caf50 100%); color: white; padding: 18px 16px 20px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 38px; height: 38px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; opacity: 0.9; font-weight: 500; }
+  .header-icon { background: rgba(255,255,255,0.2); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; }
+  .location-bar { margin-top: 14px; background: rgba(255,255,255,0.18); backdrop-filter: blur(10px); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .location-bar .dot { width: 8px; height: 8px; background: #ff5252; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-    html, body {
-      height: 100%;
-    }
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
-    }
+  .page-header { padding: 18px 16px; display: flex; align-items: center; gap: 14px; background: white; border-bottom: 1px solid #eee; }
+  .back-btn { width: 36px; height: 36px; border-radius: 50%; background: #f0f2f5; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; }
+  .page-title { font-size: 17px; font-weight: 700; }
 
-    /* ── Starfield ── */
-    canvas#stars {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
+  .hero { margin: 16px; background: white; border-radius: 18px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+  .hero-banner { margin: 16px; border-radius: 18px; overflow: hidden; position: relative; height: 180px; background: #eee; }
+  .hero-banner img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-banner .price-tag { position: absolute; bottom: 14px; right: 14px; background: white; color: #1a1a2e; border-radius: 14px; padding: 8px 14px; font-weight: 800; font-size: 15px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+  .hero-banner .price-tag span { color: #2d8659; font-size: 20px; }
+  .hero-banner .promo-badge { position: absolute; top: 14px; left: 14px; background: rgba(0,0,0,0.6); color: white; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 20px; backdrop-filter: blur(8px); }
+  .hero-badge { display: inline-block; background: #e8f5e9; color: #2d8659; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 20px; margin-bottom: 12px; }
+  .hero h1 { font-size: 22px; font-weight: 800; line-height: 1.25; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .hero h1 span { color: #ff8a00; }
+  .hero p { font-size: 13.5px; color: #666; line-height: 1.55; }
+  .hero-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 19px; font-weight: 800; color: #2d8659; }
+  .stat-label { font-size: 10.5px; color: #888; margin-top: 2px; }
 
-    /* ── HUD ring ── */
-    .hud-ring {
-      position: relative;
-      z-index: 1;
-      width: 340px;
-      height: 340px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  .section-title { padding: 0 16px; font-size: 15px; font-weight: 700; margin: 22px 0 12px; display: flex; justify-content: space-between; align-items: center; }
+  .section-title .all { font-size: 12px; color: #4caf50; font-weight: 600; cursor: pointer; }
+  .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 16px; }
+  .quick-item { background: white; border-radius: 14px; padding: 14px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; }
+  .quick-item:active { transform: scale(0.95); }
+  .quick-icon { width: 40px; height: 40px; margin: 0 auto 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .q1 { background: #fff3e0; }
+  .q2 { background: #e3f2fd; }
+  .q3 { background: #f3e5f5; }
+  .q4 { background: #ffebee; }
+  .quick-label { font-size: 11px; font-weight: 600; color: #333; }
 
-    .hud-ring svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      animation: spin 18s linear infinite;
-    }
+  .walkers-scroll { display: flex; gap: 12px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+  .walkers-scroll::-webkit-scrollbar { display: none; }
+  .walker-card { flex: 0 0 150px; background: white; border-radius: 14px; padding: 14px; cursor: pointer; }
+  .walker-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #ffd89b, #19547b); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; font-weight: 700; }
+  .walker-name { font-size: 13px; font-weight: 700; }
+  .walker-role { font-size: 11px; color: #888; margin-top: 2px; }
+  .walker-rating { font-size: 11px; color: #ff8a00; margin-top: 6px; font-weight: 600; }
 
-    .hud-ring svg.reverse {
-      animation: spin-rev 12s linear infinite;
-    }
+  .promo { margin: 16px; background: linear-gradient(135deg, #ff8a00 0%, #e52e71 100%); color: white; border-radius: 18px; padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .promo-text h3 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .promo-text p { font-size: 11.5px; opacity: 0.9; }
+  .promo-btn { background: white; color: #e52e71; font-weight: 700; padding: 8px 14px; border-radius: 10px; font-size: 12px; }
 
-    @keyframes spin     { to { transform: rotate(360deg); } }
-    @keyframes spin-rev { to { transform: rotate(-360deg); } }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: white; display: flex; justify-content: space-around; padding: 10px 0 14px; border-top: 1px solid #eee; z-index: 10; }
+  .nav-item { text-align: center; cursor: pointer; flex: 1; padding: 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #888; }
+  .nav-icon svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: color 0.2s, stroke-width 0.2s; }
+  .nav-label { font-size: 10px; color: #888; font-weight: 600; transition: color 0.2s; }
+  .nav-item.active .nav-label { color: #2d8659; }
+  .nav-item.active .nav-icon { color: #2d8659; }
+  .nav-item.active .nav-icon svg { stroke-width: 2.2; }
 
-    /* ── Content card ── */
-    .card {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      padding: 2.5rem 3rem;
-    }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: white; border-radius: 18px; padding: 26px; max-width: 320px; width: 100%; text-align: center; }
+  .modal-icon { font-size: 40px; margin-bottom: 12px; }
+  .modal h3 { font-size: 17px; margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 18px; }
+  .modal-btn { background: #2d8659; color: white; border: none; padding: 11px 28px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; width: 100%; }
+  .modal-btn.secondary { background: #f0f2f5; color: #333; margin-top: 8px; }
+  .loading-line { height: 3px; background: linear-gradient(90deg, transparent, #4caf50, transparent); background-size: 200% 100%; animation: load 1.5s infinite; margin-top: 12px; border-radius: 2px; }
+  @keyframes load { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    .logo {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(2.2rem, 6vw, 3.4rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.4rem;
-    }
+  .svc-banner { margin: 16px; border-radius: 18px; overflow: hidden; height: 200px; }
+  .svc-banner img { width: 100%; height: 100%; object-fit: cover; }
+  .svc-info { margin: 0 16px 16px; background: white; border-radius: 18px; padding: 20px; }
+  .svc-title-row { display: flex; justify-content: space-between; align-items: start; margin-bottom: 14px; }
+  .svc-title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  .svc-price { background: #e8f5e9; color: #2d8659; padding: 8px 14px; border-radius: 12px; font-weight: 800; font-size: 16px; white-space: nowrap; }
+  .svc-desc { font-size: 13.5px; color: #555; line-height: 1.55; margin-bottom: 16px; }
+  .svc-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+  .feature { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #333; }
+  .feature-icon { width: 32px; height: 32px; border-radius: 50%; background: #e8f5e9; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .order-btn { width: 100%; background: linear-gradient(135deg, #2d8659 0%, #4caf50 100%); color: white; border: none; padding: 16px; border-radius: 14px; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(45,134,89,0.3); }
+  .order-btn:active { transform: scale(0.98); }
 
-    .tagline {
-      font-size: 1rem;
-      color: var(--muted);
-      font-weight: 300;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 2.2rem;
-    }
+  .order-card { margin: 16px; background: white; border-radius: 18px; padding: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+  .order-status { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
+  .status-active { background: #e8f5e9; color: #2d8659; }
+  .status-done { background: #f0f2f5; color: #666; }
+  .order-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .order-name { font-size: 15px; font-weight: 700; }
+  .order-price { font-size: 15px; font-weight: 800; color: #2d8659; }
+  .order-details { font-size: 12.5px; color: #666; line-height: 1.6; }
+  .order-details b { color: #333; }
+  .order-track { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; }
+  .track-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #ffd89b, #19547b); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .track-info { flex: 1; }
+  .track-name { font-size: 13px; font-weight: 700; }
+  .track-eta { font-size: 11px; color: #888; }
+  .track-call { width: 36px; height: 36px; border-radius: 50%; background: #2d8659; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-    .welcome {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(1.1rem, 3vw, 1.35rem);
-      font-weight: 400;
-      color: var(--text);
-      margin-bottom: 2.4rem;
-      line-height: 1.5;
-    }
+  .profile-card { margin: 16px; background: white; border-radius: 18px; padding: 24px; text-align: center; }
+  .profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; color: white; font-size: 36px; font-weight: 800; }
+  .profile-name { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+  .profile-email { font-size: 13px; color: #888; margin-top: 4px; }
+  .profile-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+  .menu-item { margin: 8px 16px; background: white; border-radius: 14px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .menu-item:active { background: #f7f7f7; }
+  .menu-left { display: flex; align-items: center; gap: 12px; }
+  .menu-icon { width: 34px; height: 34px; border-radius: 10px; background: #f0f2f5; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .menu-label { font-size: 14px; font-weight: 600; }
+  .menu-arrow { color: #ccc; font-size: 18px; }
 
-    /* ── Button ── */
-    .btn-start {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      padding: 0.85rem 2.4rem;
-      border: none;
-      border-radius: 100px;
-      cursor: pointer;
-      position: relative;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 0 28px var(--glow);
-      text-decoration: none;
-    }
-
-    .btn-start:hover {
-      transform: translateY(-3px) scale(1.04);
-      box-shadow: 0 0 48px var(--glow);
-    }
-
-    .btn-start:active {
-      transform: translateY(0) scale(0.98);
-    }
-
-    .btn-start .arrow {
-      display: inline-block;
-      transition: transform 0.2s;
-    }
-
-    .btn-start:hover .arrow {
-      transform: translateX(4px);
-    }
-
-    /* ── Nav dots ── */
-    .nav-dots {
-      margin-top: 2.8rem;
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--muted);
-      opacity: 0.3;
-      transition: opacity 0.3s, background 0.3s;
-    }
-
-    .dot.active {
-      opacity: 1;
-      background: var(--accent);
-    }
-
-    /* ── Footer tag ── */
-    footer {
-      position: fixed;
-      bottom: 1.4rem;
-      z-index: 2;
-      font-size: 0.72rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 480px) {
-      .hud-ring { width: 280px; height: 280px; }
-      .card { padding: 2rem 1.5rem; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .hud-ring svg { animation: none; }
-    }
-  </style>
+  .map-view { margin: 16px; border-radius: 18px; overflow: hidden; height: 360px; position: relative; }
+  .map-view img { width: 100%; height: 100%; object-fit: cover; }
+  .map-overlay { position: absolute; bottom: 16px; left: 16px; right: 16px; background: white; border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+  .map-legend { background: white; border-radius: 14px; margin: 0 16px; padding: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
 </head>
 <body>
+<div class="app">
 
-  <canvas id="stars"></canvas>
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">
+        <div class="logo-icon">🐾</div>
+        <div>
+          <div class="logo-text">ДогПрогулка</div>
+          <div class="logo-sub">Сервис выгула собак</div>
+        </div>
+      </div>
+      <div class="header-icon" onclick="openNotifications()">🔔</div>
+    </div>
+    <div class="location-bar">
+      <div class="dot"></div>
+      <div><b>г. Астрахань</b> · Советский район</div>
+    </div>
+  </div>
 
-  <div class="hud-ring" aria-hidden="true">
-    <!-- Outer dashed ring -->
-    <svg viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="170" cy="170" r="160"
-        stroke="#4f8ef7" stroke-width="1"
-        stroke-dasharray="6 10"
-        stroke-opacity="0.4" />
-      <!-- tick marks -->
-      <g stroke="#4f8ef7" stroke-width="1.5" stroke-opacity="0.5">
-        <line x1="170" y1="10"  x2="170" y2="24" />
-        <line x1="170" y1="316" x2="170" y2="330" />
-        <line x1="10"  y1="170" x2="24"  y2="170" />
-        <line x1="316" y1="170" x2="330" y2="170" />
-      </g>
-    </svg>
+  <!-- HOME VIEW -->
+  <div class="view active" id="view-home">
+    <div class="hero-banner">
+      <img src="https://image.qwenlm.ai/public_source/3db83f77-ccd9-4a6b-9aba-386eded003ad/176dbffaa-131b-4382-8021-1f23d4c6d135.png" alt="">
+      <div class="promo-badge">📍 Советский район</div>
+      <div class="price-tag">от <span>300₽</span> / прогулка</div>
+    </div>
 
-    <!-- Inner spinning arc -->
-    <svg class="reverse" viewBox="0 0 340 340" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="170" cy="170" r="130"
-        stroke="url(#grad1)" stroke-width="1.5"
-        stroke-dasharray="40 220"
-        stroke-linecap="round" />
-      <defs>
-        <linearGradient id="grad1" x1="0" y1="0" x2="340" y2="340" gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stop-color="#4f8ef7"/>
-          <stop offset="100%" stop-color="#a78bfa"/>
-        </linearGradient>
-      </defs>
-    </svg>
+    <div class="hero">
+      <span class="hero-badge">🐾 Официальный партнёр района</span>
+      <h1>Выгул собак <span>в Советском районе</span> Астрахани</h1>
+      <p>Профессиональные догситтеры рядом с вами. Ежедневные прогулки, передержка и зооняня с 2019 года.</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">124</div><div class="stat-label">Выгульщика</div></div>
+        <div class="stat"><div class="stat-num">4.9</div><div class="stat-label">Рейтинг</div></div>
+        <div class="stat"><div class="stat-num">3K+</div><div class="stat-label">Клиентов</div></div>
+      </div>
+    </div>
 
-    <!-- Card sits in the middle via z-index -->
-    <div class="card">
-      <div class="logo">KiriPilot</div>
-      <div class="tagline">Navigate your potential</div>
-      <p class="welcome">Добро пожаловать!<br/>Готов начать?</p>
-      <a href="#" class="btn-start" onclick="handleStart(event)">
-        Start <span class="arrow">→</span>
-      </a>
-      <div class="nav-dots">
-        <div class="dot active"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+    <div class="section-title">Быстрые услуги</div>
+    <div class="quick-grid">
+      <div class="quick-item" onclick="openService('walk')">
+        <div class="quick-icon q1">🚶</div>
+        <div class="quick-label">Выгул</div>
+      </div>
+      <div class="quick-item" onclick="openService('stay')">
+        <div class="quick-icon q2">🏠</div>
+        <div class="quick-label">Передержка</div>
+      </div>
+      <div class="quick-item" onclick="showDevModal()">
+        <div class="quick-icon q3">💊</div>
+        <div class="quick-label">Ветеринар</div>
+      </div>
+      <div class="quick-item" onclick="showDevModal()">
+        <div class="quick-icon q4">✂️</div>
+        <div class="quick-label">Груминг</div>
+      </div>
+    </div>
+
+    <div class="section-title">Лучшие выгульщики <span class="all" onclick="switchView('view-orders')">Все →</span></div>
+    <div class="walkers-scroll">
+      <div class="walker-card" onclick="openService('walk')">
+        <div class="walker-avatar">А</div>
+        <div class="walker-name">Анна К.</div>
+        <div class="walker-role">ул. Боевая</div>
+        <div class="walker-rating">★ 4.9 · 210 заказов</div>
+      </div>
+      <div class="walker-card" onclick="openService('walk')">
+        <div class="walker-avatar" style="background:linear-gradient(135deg,#ff9a9e,#fecfef)">М</div>
+        <div class="walker-name">Максим Р.</div>
+        <div class="walker-role">пр. Аксайский</div>
+        <div class="walker-rating">★ 4.8 · 187 заказов</div>
+      </div>
+      <div class="walker-card" onclick="openService('walk')">
+        <div class="walker-avatar" style="background:linear-gradient(135deg,#a1c4fd,#c2e9fb)">Е</div>
+        <div class="walker-name">Елена В.</div>
+        <div class="walker-role">ул. Кубанская</div>
+        <div class="walker-rating">★ 5.0 · 143 заказа</div>
+      </div>
+      <div class="walker-card" onclick="openService('walk')">
+        <div class="walker-avatar" style="background:linear-gradient(135deg,#84fab0,#8fd3f4)">Д</div>
+        <div class="walker-name">Дмитрий С.</div>
+        <div class="walker-role">ул. Космонавтов</div>
+        <div class="walker-rating">★ 4.9 · 156 заказов</div>
+      </div>
+    </div>
+
+    <div class="promo" onclick="openService('walk')">
+      <div class="promo-text">
+        <h3>🎁 Первая прогулка за 300₽</h3>
+        <p>Фиксированная цена по районуану</p>
+      </div>
+      <div class="promo-btn">Заказать</div>
+    </div>
+
+    <div class="section-title">Отзывы клиентов <span class="all" onclick="showDevModal()">Все →</span></div>
+    <div style="padding:0 16px;">
+      <div class="hero" style="margin:0 0 10px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div class="walker-avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#f093fb,#f5576c)">О</div>
+          <div>
+            <div style="font-weight:700; font-size:13px;">Ольга М.</div>
+            <div style="font-size:11px; color:#ff8a00;">★★★★★</div>
+          </div>
+        </div>
+        <p style="font-size:12.5px; color:#444;">"Замечательный сервис! Мой лабрадор в восторге от выгульщика Анны. Каждый раз возвращаются счастливыми."</p>
+      </div>
+      <div class="hero" style="margin:0;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div class="walker-avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#667eea,#764ba2)">И</div>
+          <div>
+            <div style="font-weight:700; font-size:13px;">Игорь Т.</div>
+            <div style="font-size:11px; color:#ff8a00;">★★★★★</div>
+          </div>
+        </div>
+        <p style="font-size:12.5px; color:#444;">"Пользуюсь уже год. Цены адекватные — 300р за прогулку, ребята ответственные. Рекомендую!"</p>
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+
+  <!-- SERVICE VIEW -->
+  <div class="view" id="view-service">
+    <div class="page-header">
+      <div class="back-btn" onclick="switchView('view-home')">←</div>
+      <div class="page-title" id="svc-page-title">Выгул собак</div>
+    </div>
+    <div class="svc-banner">
+      <img src="https://image.qwenlm.ai/public_source/3db83f77-ccd9-4a6b-9aba-386eded003ad/176dbffaa-131b-4382-8021-1f23d4c6d135.png" alt="">
+    </div>
+    <div class="svc-info">
+      <div class="svc-title-row">
+        <div class="svc-title" id="svc-title-text">Выгул собак</div>
+        <div class="svc-price" id="svc-price-text">300₽</div>
+      </div>
+      <div class="svc-desc" id="svc-desc-text">Профессиональный выгул вашей собаки в Советском районе Астрахани. Опытные догситтеры, индивидуальный подход, фотоотчёт после каждой прогулки.</div>
+      <div class="svc-features">
+        <div class="feature"><div class="feature-icon">⏱️</div><div>Длительность прогулки — 60 минут</div></div>
+        <div class="feature"><div class="feature-icon">📸</div><div>Фото и видеоотчёт в чате</div></div>
+        <div class="feature"><div class="feature-icon">📍</div><div>GPS-трекинг маршрута</div></div>
+        <div class="feature"><div class="feature-icon">🛡️</div><div>Страховка питомца включена</div></div>
+      </div>
+      <button class="order-btn" onclick="placeOrder()">Заказать за 300₽</button>
+    </div>
+  </div>
+
+  <!-- MAP VIEW -->
+  <div class="view" id="view-map">
+    <div class="page-header">
+      <div class="back-btn" onclick="switchView('view-home')">←</div>
+      <div class="page-title">Карта района</div>
+    </div>
+    <div class="map-view">
+      <img src="https://image.qwenlm.ai/public_source/3db83f77-ccd9-4a6b-9aba-386eded003ad/16912bd5d-149a-4f9b-9117-a8c22f8441e5.png" alt="">
+      <div class="map-overlay">
+        <div class="track-avatar">С</div>
+        <div class="track-info">
+          <div class="track-name">Советский район</div>
+          <div class="track-eta">124 выгульщика онлайн</div>
+        </div>
+      </div>
+    </div>
+    <div class="map-legend">
+      <div style="font-weight:700; font-size:14px; margin-bottom:8px;">Популярные места выгула:</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ff8a00"></div>Парк им. 60-летия Сталинградской битвы</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e52e71"></div>Сквер на ул. Боевая</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2d8659"></div>Набережная р. Кутум</div>
+    </div>
+  </div>
+
+  <!-- ORDERS VIEW -->
+  <div class="view" id="view-orders">
+    <div class="page-header">
+      <div class="back-btn" onclick="switchView('view-home')">←</div>
+      <div class="page-title">Мои заказы</div>
+    </div>
+    <div class="order-card">
+      <div class="order-status status-active">● В процессе</div>
+      <div class="order-top">
+        <div class="order-name">Выгул · Рекс</div>
+        <div class="order-price">300₽</div>
+      </div>
+      <div class="order-details">
+        <b>Дата:</b> Сегодня, 14:30<br>
+        <b>Адрес:</b> ул. Боевая, д. 45, кв. 12<br>
+        <b>Длительность:</b> 60 минут
+      </div>
+      <div class="order-track">
+        <div class="track-avatar">А</div>
+        <div class="track-info">
+          <div class="track-name">Анна К.</div>
+          <div class="track-eta">Уже на маршруте · 23 мин</div>
+        </div>
+        <div class="track-call" onclick="showCallModal()">📞</div>
+      </div>
+    </div>
+    <div class="order-card">
+      <div class="order-status status-done">✓ Выполнен</div>
+      <div class="order-top">
+        <div class="order-name">Выгул · Рекс</div>
+        <div class="order-price">300₽</div>
+      </div>
+      <div class="order-details">
+        <b>Дата:</b> 24 июня, 18:00<br>
+        <b>Адрес:</b> ул. Боевая, д. 45, кв. 12<br>
+        <b>Выгульщик:</b> Максим Р. ★ 4.8
+      </div>
+    </div>
+    <div class="order-card">
+      <div class="order-status status-done">✓ Выполнен</div>
+      <div class="order-top">
+        <div class="order-name">Выгул · Рекс</div>
+        <div class="order-price">300₽</div>
+      </div>
+      <div class="order-details">
+        <b>Дата:</b> 22 июня, 10:00<br>
+        <b>Адрес:</b> ул. Боевая, д. 45, кв. 12<br>
+        <b>Выгульщик:</b> Анна К. ★ 4.9
       </div>
     </div>
   </div>
 
-  <footer>KiriPilot.com &mdash; Coming Soon</footer>
+  <!-- PROFILE VIEW -->
+  <div class="view" id="view-profile">
+    <div class="page-header">
+      <div class="back-btn" onclick="switchView('view-home')">←</div>
+      <div class="page-title">Профиль</div>
+    </div>
+    <div class="profile-card">
+      <div class="profile-avatar">АП</div>
+      <div class="profile-name">Алексей Петров</div>
+      <div class="profile-email">+7 (927) 541-**-83 · астрахань</div>
+      <div class="profile-stats">
+        <div class="stat"><div class="stat-num">24</div><div class="stat-label">Заказа</div></div>
+        <div class="stat"><div class="stat-num">1</div><div class="stat-label">Питомец</div></div>
+        <div class="stat"><div class="stat-num">1.2к</div><div class="stat-label">Баллов</div></div>
+      </div>
+    </div>
+    <div class="menu-item" onclick="switchView('view-orders')">
+      <div class="menu-left"><div class="menu-icon">📦</div><div class="menu-label">Мои заказы</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="switchView('view-map')">
+      <div class="menu-left"><div class="menu-icon">🗺️</div><div class="menu-label">Карта района</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="openPets()">
+      <div class="menu-left"><div class="menu-icon">🐶</div><div class="menu-label">Мои питомцы</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="openPayment()">
+      <div class="menu-left"><div class="menu-icon">💳</div><div class="menu-label">Способы оплаты</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="showDevModal()">
+      <div class="menu-left"><div class="menu-icon">⚙️</div><div class="menu-label">Настройки</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="showDevModal()">
+      <div class="menu-left"><div class="menu-icon">❓</div><div class="menu-label">Помощь</div></div>
+      <div class="menu-arrow">›</div>
+    </div>
+  </div>
 
-  <script>
-    /* ── Starfield ── */
-    const canvas = document.getElementById('stars');
-    const ctx    = canvas.getContext('2d');
-    let stars    = [];
+  <div class="bottom-nav">
+    <div class="nav-item active" data-view="view-home" onclick="navTo('view-home', this)">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V9.5"/></svg>
+      </div>
+      <div class="nav-label">Главная</div>
+    </div>
+    <div class="nav-item" onclick="navTo('view-map', this)">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </div>
+      <div class="nav-label">Карта</div>
+    </div>
+    <div class="nav-item" onclick="navTo('view-orders', this)">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/><path d="M8 13h8M8 17h5"/></svg>
+      </div>
+      <div class="nav-label">Заказы</div>
+    </div>
+    <div class="nav-item" onclick="openChat()">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v9a2 2 0 01-2 2H9l-5 4V6z"/><circle cx="9.5" cy="10.5" r="0.8" fill="currentColor"/><circle cx="12.5" cy="10.5" r="0.8" fill="currentColor"/><circle cx="15.5" cy="10.5" r="0.8" fill="currentColor"/></svg>
+      </div>
+      <div class="nav-label">Чат</div>
+    </div>
+    <div class="nav-item" onclick="navTo('view-profile', this)">
+      <div class="nav-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <div class="nav-label">Профиль</div>
+    </div>
+  </div>
 
-    function resize() {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
+</div>
+
+<!-- Модалки -->
+<div class="modal-bg" id="modal-dev">
+  <div class="modal">
+    <div class="modal-icon">🚧</div>
+    <h3>Раздел в разработке</h3>
+    <p>Мы обновляем интерфейс. Попробуйте зайти позже.</p>
+    <div class="loading-line"></div>
+    <br>
+    <button class="modal-btn" onclick="hideModal('modal-dev')">Понятно</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-order">
+  <div class="modal">
+    <div class="modal-icon">✅</div>
+    <h3>Заказ оформлен!</h3>
+    <p>Выгульщик Анна К. уже в пути. Ожидайте прибытия через 12 минут. Стоимость: <b>300₽</b></p>
+    <button class="modal-btn" onclick="hideModal('modal-order'); navTo('view-orders', document.querySelectorAll('.nav-item')[2])">К заказам</button>
+    <button class="modal-btn secondary" onclick="hideModal('modal-order')">Закрыть</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-notif">
+  <div class="modal">
+    <div class="modal-icon">🔔</div>
+    <h3>Уведомления</h3>
+    <p style="text-align:left;">
+      <b style="color:#2d8659;">● 14:52</b> — Анна начала прогулку с Рексом<br><br>
+      <b style="color:#ff8a00;">● 12:30</b> — Новая акция: 3 прогулки за 800₽<br><br>
+      <b>● Вчера</b> — Оплата 300₽ прошла успешно
+    </p>
+    <button class="modal-btn" onclick="hideModal('modal-notif')">Понятно</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-call">
+  <div class="modal">
+    <div class="modal-icon">📞</div>
+    <h3>Позвонить выгульщику?</h3>
+    <p>Анна К. · +7 (927) 541-**-83</p>
+    <button class="modal-btn" onclick="hideModal('modal-call')">Вызвать</button>
+    <button class="modal-btn secondary" onclick="hideModal('modal-call')">Отмена</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-pets">
+  <div class="modal">
+    <div class="modal-icon">🐕</div>
+    <h3>Рекс</h3>
+    <p style="text-align:left;">
+      <b>Порода:</b> Немецкая овчарка<br>
+      <b>Возраст:</b> 4 года<br>
+      <b>Вес:</b> 32 кг<br>
+      <b>Характер:</b> Дружелюбный, активный<br>
+      <b>Прививки:</b> Все актуальны
+    </p>
+    <button class="modal-btn" onclick="hideModal('modal-pets')">Закрыть</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-payment">
+  <div class="modal">
+    <div class="modal-icon">💳</div>
+    <h3>Способы оплаты</h3>
+    <p style="text-align:left;">
+      <div style="background:#f0f2f5; padding:12px; border-radius:10px; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:20px;">💳</span>
+        <div style="flex:1;"><b>•••• 4521</b><div style="font-size:11px; color:#888;">Сбербанк · основная</div></div>
+        <span style="color:#2d8659;">✓</span>
+      </div>
+      <div style="background:#f0f2f5; padding:12px; border-radius:10px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:20px;">💰</span>
+        <div style="flex:1;"><b>Наличные</b><div style="font-size:11px; color:#888;">Оплата на месте</div></div>
+      </div>
+    </p>
+    <button class="modal-btn" onclick="hideModal('modal-payment')">Закрыть</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-chat">
+  <div class="modal">
+    <div class="modal-icon">💬</div>
+    <h3>Чат с Анной К.</h3>
+    <div style="text-align:left; background:#f4f6f8; border-radius:10px; padding:12px; margin-bottom:12px; max-height:200px; overflow-y:auto;">
+      <div style="background:white; padding:8px 12px; border-radius:10px; margin-bottom:6px; font-size:12px; max-width:85%;">Привет! Буду у вас через 10 минут 🐾</div>
+      <div style="background:#2d8659; color:white; padding:8px 12px; border-radius:10px; margin-bottom:6px; font-size:12px; max-width:85%; margin-left:auto;">Спасибо! Ключ под ковриком</div>
+      <div style="background:white; padding:8px 12px; border-radius:10px; margin-bottom:6px; font-size:12px; max-width:85%;">Приняла Рекса, идём в парк 📸</div>
+      <div style="background:white; padding:8px 12px; border-radius:10px; font-size:12px; max-width:85%;"><img src="https://image.qwenlm.ai/public_source/3db83f77-ccd9-4a6b-9aba-386eded003ad/176dbffaa-131b-4382-8021-1f23d4c6d135.png" style="width:100%; border-radius:8px;"></div>
+    </div>
+    <button class="modal-btn" onclick="hideModal('modal-chat')">Закрыть</button>
+  </div>
+</div>
+
+<script>
+  function switchView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navMap = { 'view-home': 0, 'view-map': 1, 'view-orders': 2, 'view-profile': 4 };
+    if (navMap[id] !== undefined) {
+      document.querySelectorAll('.nav-item')[navMap[id]].classList.add('active');
     }
-
-    function initStars(n = 140) {
-      stars = [];
-      for (let i = 0; i < n; i++) {
-        stars.push({
-          x:    Math.random() * canvas.width,
-          y:    Math.random() * canvas.height,
-          r:    Math.random() * 1.4 + 0.3,
-          a:    Math.random(),
-          da:   (Math.random() * 0.004 + 0.001) * (Math.random() < 0.5 ? 1 : -1),
-          vx:   (Math.random() - 0.5) * 0.08,
-          vy:   (Math.random() - 0.5) * 0.08,
-        });
-      }
+  }
+  function navTo(id, el) {
+    switchView(id);
+  }
+  function openService(type) {
+    if (type === 'walk') {
+      document.getElementById('svc-page-title').textContent = 'Выгул собак';
+      document.getElementById('svc-title-text').textContent = 'Выгул собак';
+      document.getElementById('svc-price-text').textContent = '300₽';
+      document.getElementById('svc-desc-text').textContent = 'Профессиональный выгул вашей собаки в Советском районе Астрахани. Опытные догситтеры, индивидуальный подход, фотоотчёт после каждой прогулки.';
+    } else if (type === 'stay') {
+      document.getElementById('svc-page-title').textContent = 'Передержка';
+      document.getElementById('svc-title-text').textContent = 'Передержка собак';
+      document.getElementById('svc-price-text').textContent = '800₽/сут';
+      document.getElementById('svc-desc-text').textContent = 'Уютная передержка вашего питомца в проверенных семьях Советского района. Кормление, прогулки и внимание 24/7.';
     }
-
-    function drawStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const s of stars) {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(167, 139, 250, ${Math.max(0, Math.min(1, s.a))})`;
-        ctx.fill();
-
-        s.a  += s.da;
-        if (s.a > 1 || s.a < 0) s.da *= -1;
-        s.x  += s.vx;
-        s.y  += s.vy;
-        if (s.x < 0) s.x = canvas.width;
-        if (s.x > canvas.width)  s.x = 0;
-        if (s.y < 0) s.y = canvas.height;
-        if (s.y > canvas.height) s.y = 0;
-      }
-      requestAnimationFrame(drawStars);
-    }
-
-    window.addEventListener('resize', () => { resize(); initStars(); });
-    resize();
-    initStars();
-    drawStars();
-
-    /* ── Start button ── */
-    function handleStart(e) {
-      e.preventDefault();
-      // Replace this with your real navigation later
-      alert('Запуск скоро! 🚀');
-    }
-  </script>
+    switchView('view-service');
+  }
+  function placeOrder() {
+    document.getElementById('modal-order').classList.add('show');
+  }
+  function showDevModal() {
+    document.getElementById('modal-dev').classList.add('show');
+  }
+  function openNotifications() {
+    document.getElementById('modal-notif').classList.add('show');
+  }
+  function showCallModal() {
+    document.getElementById('modal-call').classList.add('show');
+  }
+  function openPets() {
+    document.getElementById('modal-pets').classList.add('show');
+  }
+  function openPayment() {
+    document.getElementById('modal-payment').classList.add('show');
+  }
+  function openChat() {
+    document.getElementById('modal-chat').classList.add('show');
+  }
+  function hideModal(id) {
+    document.getElementById(id).classList.remove('show');
+  }
+  document.querySelectorAll('.modal-bg').forEach(m => {
+    m.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('show');
+    });
+  });
+</script>
 </body>
 </html>
+
